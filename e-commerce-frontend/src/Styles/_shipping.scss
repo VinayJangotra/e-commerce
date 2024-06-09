@@ -1,0 +1,75 @@
+.shipping {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0; // Light grey background
+
+    button.return {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background-color: #000; // Black background
+        color: #fff; // White text
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: #333; // Dark grey on hover
+            transform: scale(1.05);
+        }
+
+        svg {
+            width: 1em;
+            height: 1em;
+            margin-right: 0.5em;
+        }
+    }
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center items on the cross axis
+  width: 80%;
+  max-width: 500px;
+  background-color: #fff; // White form background
+
+  h3 {
+    color: #000; // Black text
+  }
+
+  input {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc; // Grey border
+    border-radius: 5px;
+    transition: border 0.3s ease;
+
+    &:focus {
+      border-color: #000; // Black border on focus
+    }
+  }
+
+  button.pay-now {
+    padding: 10px 20px;
+    margin-top: 20px;
+    background-color: #000; // Black background
+    color: #fff; // White text
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #333; // Dark grey on hover
+    }
+  }
+}
+}
