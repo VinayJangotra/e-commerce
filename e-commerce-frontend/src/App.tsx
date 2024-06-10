@@ -3,12 +3,16 @@ import  {Suspense, lazy} from 'react'
 import Loader from './components/Loader';
 import Header from './components/Header';
 
+
+
  
 const Search = lazy(() => import("./pages/Search")); 
 const Home = lazy(() => import("./pages/Home")); 
 const Cart = lazy(() => import("./pages/Cart"));
 const Shipping = lazy(() => import("./pages/Shipping"));
 const Login = lazy(() => import("./pages/Login"));
+const Orders= lazy(() => import("./pages/Orders"));
+const OrderDetails = lazy(() => import("./pages/OrderDetails"));
 // admin routes
 const Dashboard = lazy(() => import("./pages/admin/dashboard"));
 const Products = lazy(() => import("./pages/admin/products"));
@@ -47,6 +51,8 @@ const App = () => {
           {/* Login Routes */}
           <Route>
             <Route path="/shipping" element={<Shipping />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/orders/:id" element={<OrderDetails />} />
           </Route>
           // admin routes
           <Route
