@@ -4,8 +4,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const port = 3000;
+const user_1 = __importDefault(require("./routes/user")); // Ensure the path is correct
+const features_1 = require("./utils/features");
 const app = (0, express_1.default)();
+app.use(express_1.default.json());
+const port = process.env.PORT || 3000;
+(0, features_1.connectDB)(); // Use environment variable or default to 3000
+app.get("/", (req, res) => {
+    res.send("Hello World");
+});
+app.use("/api/v1/user", user_1.default);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
