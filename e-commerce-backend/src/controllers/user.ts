@@ -61,6 +61,7 @@ export const newUser = TryCatch(
     
   }
 );
+// Get all The Users
 export const getAllUsers = TryCatch(async (req,res,next)=>{
   const users=await User.find();
   res.status(200).json({
@@ -68,3 +69,34 @@ export const getAllUsers = TryCatch(async (req,res,next)=>{
     data:{users}
   })
 })
+// Get the User by Id
+export const getUser = TryCatch(async (req, res, next) => {
+  const id=req.params.id;
+  const user = await User.findById(id);
+  if(!user){
+    return res.status(404).json({
+      message:"User not found"
+    })
+  }
+  res.status(200).json({
+    status: "success",
+    data: { user },
+  });
+});
+
+// Delete the User
+export const deleteUser = TryCatch(async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findById(id);
+  if (!user) {
+    return res.status(404).json({
+      message: "User not found",
+    });
+  }
+  await user.deleteOne();
+
+  res.status(200).json({
+    status: "User Deleted Successfully",
+    data: { user },
+  });
+});

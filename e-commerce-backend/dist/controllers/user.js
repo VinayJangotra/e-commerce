@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUsers = exports.newUser = void 0;
+exports.deleteUser = exports.getUser = exports.getAllUsers = exports.newUser = void 0;
 const zod_1 = require("zod");
 const user_1 = require("../models/user");
 const error_1 = require("../middlewares/error");
@@ -63,10 +63,40 @@ exports.newUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, vo
         data: { user },
     });
 }));
+// Get all The Users
 exports.getAllUsers = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield user_1.User.find();
     res.status(200).json({
         status: "success",
         data: { users }
+    });
+}));
+// Get the User by Id
+exports.getUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    const user = yield user_1.User.findById(id);
+    if (!user) {
+        return res.status(404).json({
+            message: "User not found"
+        });
+    }
+    res.status(200).json({
+        status: "success",
+        data: { user },
+    });
+}));
+// Delete the User
+exports.deleteUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    const user = yield user_1.User.findById(id);
+    if (!user) {
+        return res.status(404).json({
+            message: "User not found",
+        });
+    }
+    yield user.deleteOne();
+    res.status(200).json({
+        status: "User Deleted Successfully",
+        data: { user },
     });
 }));
