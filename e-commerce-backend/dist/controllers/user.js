@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.newUser = void 0;
+exports.getAllUsers = exports.newUser = void 0;
 const zod_1 = require("zod");
 const user_1 = require("../models/user");
 const error_1 = require("../middlewares/error");
@@ -39,7 +39,18 @@ exports.newUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, vo
         });
     }
     const { name, email, photo, gender, _id, dob } = req.body;
-    const user = yield user_1.User.create({
+    let user = yield user_1.User.findById(_id);
+    if (user) {
+        return res.status(411).json({
+            message: `Welcome, ${user.name}`,
+        });
+    }
+    if (!_id || !name || !email || !photo || !gender || !dob) {
+        return res.status(411).json({
+            message: "All fields are required",
+        });
+    }
+    user = yield user_1.User.create({
         name,
         email,
         photo,
@@ -50,5 +61,12 @@ exports.newUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, vo
     res.status(201).json({
         status: "success",
         data: { user },
+    });
+}));
+exports.getAllUsers = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const users = yield user_1.User.find();
+    res.status(200).json({
+        status: "success",
+        data: { users }
     });
 }));

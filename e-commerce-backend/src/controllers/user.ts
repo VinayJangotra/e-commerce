@@ -36,7 +36,17 @@ export const newUser = TryCatch(
         });
       }
       const { name, email, photo, gender, _id, dob } = req.body;
-      const user = await User.create({
+      let user =await User.findById(_id);
+      if(user){
+        return res.status(411).json({
+          message: `Welcome, ${user.name}`,
+        });}
+      if(!_id || !name || !email || !photo || !gender || !dob){
+        return res.status(411).json({
+          message: "All fields are required",
+        });
+      }
+       user = await User.create({
         name,
         email,
         photo,
@@ -51,3 +61,10 @@ export const newUser = TryCatch(
     
   }
 );
+export const getAllUsers = TryCatch(async (req,res,next)=>{
+  const users=await User.find();
+  res.status(200).json({
+    status:"success",
+    data:{users}
+  })
+})
