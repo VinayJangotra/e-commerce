@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.newUser = void 0;
 const zod_1 = require("zod");
 const user_1 = require("../models/user");
+const error_1 = require("../middlewares/error");
 // Zod Validation
 const signupBody = zod_1.z.object({
     name: zod_1.z.string(),
@@ -20,42 +21,34 @@ const signupBody = zod_1.z.object({
     gender: zod_1.z.string(),
     _id: zod_1.z.string(),
 });
-const newUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { success, error } = signupBody.safeParse(req.body);
-        if (!success) {
-            return res.status(400).json({
-                message: "Invalid request body",
-                error: error.formErrors.fieldErrors,
-            });
-        }
-        const existingUser = yield user_1.User.findOne({
-            email: req.body.email,
-        });
-        if (existingUser) {
-            return res.status(411).json({
-                message: "Email already taken/Incorrect inputs",
-            });
-        }
-        const { name, email, photo, gender, _id, dob } = req.body;
-        const user = yield user_1.User.create({
-            name,
-            email,
-            photo,
-            gender,
-            _id,
-            dob: new Date(dob),
-        });
-        res.status(201).json({
-            status: "success",
-            data: { user }
+exports.newUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const { success, error } = signupBody.safeParse(req.body);
+    if (!success) {
+        return res.status(400).json({
+            message: "Invalid request body",
+            error: (_a = error === null || error === void 0 ? void 0 : error.formErrors.fieldErrors) !== null && _a !== void 0 ? _a : null,
         });
     }
-    catch (error) {
-        res.status(500).json({
-            status: "fail",
-            message: error,
+    const existingUser = yield user_1.User.findOne({
+        email: req.body.email,
+    });
+    if (existingUser) {
+        return res.status(411).json({
+            message: "Email already taken/Incorrect inputs",
         });
     }
-});
-exports.newUser = newUser;
+    const { name, email, photo, gender, _id, dob } = req.body;
+    const user = yield user_1.User.create({
+        name,
+        email,
+        photo,
+        gender,
+        _id,
+        dob: new Date(dob),
+    });
+    res.status(201).json({
+        status: "success",
+        data: { user },
+    });
+}));

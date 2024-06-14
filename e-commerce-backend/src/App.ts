@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./routes/user"; // Ensure the path is correct
 import { connectDB } from "./utils/features";
+import { errorMiddlewware } from "./middlewares/error";
 
 const app = express();
 app.use(express.json());
@@ -11,6 +12,8 @@ app.get("/",(req,res)=>{
 })
 app.use("/api/v1/user", userRoutes);
 
+
+app.use(errorMiddlewware);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
