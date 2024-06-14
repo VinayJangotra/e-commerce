@@ -5,11 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const user_1 = require("../controllers/user");
+const auth_1 = require("../middlewares/auth");
 const app = express_1.default.Router();
 app.post("/new", user_1.newUser);
 // routes = /api/v1/user/all
-app.get("/all", user_1.getAllUsers);
+app.get("/all", auth_1.adminOnly, user_1.getAllUsers);
 // routes = /api/v1/user/dynamic id
 // This is the alternate way of writing the routes in which the path are same
-app.route("/:id").get(user_1.getUser).delete(user_1.deleteUser);
+app.route("/:id").get(user_1.getUser).delete(auth_1.adminOnly, user_1.deleteUser);
 exports.default = app;
