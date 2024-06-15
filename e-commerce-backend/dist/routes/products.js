@@ -14,4 +14,6 @@ app.post("/new", auth_1.adminOnly, multer_1.singleUpload, product_1.newProduct);
 app.get("/latest", product_1.getLatestProduct);
 //g Get all the categories
 app.get("/category", product_1.getCategories);
+// Get all the prfoducts from the list
+app.get("/admin-products", auth_1.adminOnly, product_1.getAdminProduct);
 exports.default = app;

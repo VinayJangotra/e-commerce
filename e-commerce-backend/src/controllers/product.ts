@@ -62,3 +62,12 @@ export const getCategories = TryCatch(
     });
   }
 );
+///Get all the products a as a admin
+export const getAdminProduct = TryCatch(async (req, res, next) => {
+  // It gives all the products that are available in the list
+  const product = await Product.find({});
+  return res.status(200).json({
+    status: "success",
+    product,
+  });
+});

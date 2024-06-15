@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
+exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
 const fs_1 = require("fs");
 const error_1 = require("../middlewares/error");
 const product_1 = require("../models/product");
@@ -59,5 +59,14 @@ exports.getCategories = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
     return res.status(200).json({
         status: "success",
         categories,
+    });
+}));
+///Get all the products a as a admin
+exports.getAdminProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // It gives all the products that are available in the list
+    const product = yield product_1.Product.find({});
+    return res.status(200).json({
+        status: "success",
+        product,
     });
 }));
