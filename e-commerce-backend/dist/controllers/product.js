@@ -9,13 +9,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.newProduct = void 0;
+exports.getLatestProduct = exports.newProduct = void 0;
+const fs_1 = require("fs");
 const error_1 = require("../middlewares/error");
 const product_1 = require("../models/product");
 exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, category, price, stock } = req.body;
     const photo = req.file;
+    if (!photo) {
+        return res.status(411).json({
+            message: "Please upload a photo",
+        });
+    }
     if (!name || !category || !price || !stock) {
+        // remove the photo if it already exist
+        (0, fs_1.rm)(photo.path, () => {
+            console.log("Photo removed");
+        });
         return res.status(411).json({
             message: "All fields are required",
         });
@@ -31,5 +41,14 @@ exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0,
     return res.status(201).json({
         status: "success",
         message: "Product created successfully",
+    });
+}));
+// Get the latest product
+exports.getLatestProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // Get the products at the descending order on the abssis of creation if the we take 1 then it is sorted as ascending order
+    const product = yield product_1.Product.find({}).sort({ createdAt: -1 }).limit(5);
+    return res.status(200).json({
+        status: "success",
+        product,
     });
 }));

@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/v1/products", products_1.default);
 app.use("/api/v1/user", user_1.default);
+app.use("/uploads", express_1.default.static("uploads"));
 app.use(error_1.errorMiddlewware);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

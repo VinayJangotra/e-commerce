@@ -18,7 +18,7 @@ app.get("/",(req,res)=>{
 app.use("/api/v1/products", productRoute);
 app.use("/api/v1/user", userRoutes);
 
-
+app.use("/uploads",express.static("uploads"));
 app.use(errorMiddlewware);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
