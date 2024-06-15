@@ -12,4 +12,6 @@ const app = express_1.default.Router();
 app.post("/new", auth_1.adminOnly, multer_1.singleUpload, product_1.newProduct);
 // Get the latest product
 app.get("/latest", product_1.getLatestProduct);
+//g Get all the categories
+app.get("/category", product_1.getCategories);
 exports.default = app;

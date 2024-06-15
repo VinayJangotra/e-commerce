@@ -51,3 +51,14 @@ export const getLatestProduct = TryCatch(
     });
   }
 );
+// Get all the categories
+export const getCategories = TryCatch(
+  async (req, res, next) => {
+    // on the basis of the category field the  product is provided the categories
+    const categories = await Product.distinct("category");
+    return res.status(200).json({
+      status: "success",
+      categories,
+    });
+  }
+);
