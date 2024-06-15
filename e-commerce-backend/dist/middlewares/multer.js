@@ -5,13 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.singleUpload = void 0;
 const multer_1 = __importDefault(require("multer"));
-// It is used to store the file within the system
 const storage = multer_1.default.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads');
+    destination(req, file, callback) {
+        callback(null, "uploads/");
     },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname);
-    }
+    filename(req, file, callback) {
+        callback(null, file.originalname);
+    },
 });
 exports.singleUpload = (0, multer_1.default)({ storage }).single("photo");

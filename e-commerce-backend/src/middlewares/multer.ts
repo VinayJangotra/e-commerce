@@ -1,11 +1,15 @@
-import multer from "multer"
-// It is used to store the file within the system
+
+import multer from "multer";
+
+
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.originalname)
-    }
+  destination(req, file, callback) {
+    callback(null, "uploads/");
+  },
+  filename(req, file, callback) {
+   
+    callback(null,file.originalname);
+  },
 });
-export const singleUpload = multer({storage}).single("photo");
+
+export const singleUpload = multer({ storage }).single("photo");

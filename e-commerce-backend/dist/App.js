@@ -4,9 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const user_1 = __importDefault(require("./routes/user")); // Ensure the path is correct
 const features_1 = require("./utils/features");
 const error_1 = require("./middlewares/error");
+// Importing Routes
+const user_1 = __importDefault(require("./routes/user")); // Ensure the path is correct
+const products_1 = __importDefault(require("./routes/products"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 const port = process.env.PORT || 3000;
@@ -14,6 +16,8 @@ const port = process.env.PORT || 3000;
 app.get("/", (req, res) => {
     res.send("Hello World");
 });
+// Routes
+app.use("/api/v1/products", products_1.default);
 app.use("/api/v1/user", user_1.default);
 app.use(error_1.errorMiddlewware);
 app.listen(port, () => {
