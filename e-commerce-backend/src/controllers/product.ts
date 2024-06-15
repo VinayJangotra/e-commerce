@@ -3,6 +3,7 @@ import { TryCatch } from "../middlewares/error";
 import { Product } from "../models/product";
 import { NewProductRequestBody } from "../types/types";
 import { Request } from "express";
+import ErrorHandler from "../utils/utility-class";
 
 export const newProduct = TryCatch(
   async (req: Request<{}, {}, NewProductRequestBody>, res, next) => {
@@ -69,5 +70,59 @@ export const getAdminProduct = TryCatch(async (req, res, next) => {
   return res.status(200).json({
     status: "success",
     product,
+  });
+});
+// get single product 
+export const getSingleProduct = TryCatch(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+  if(!product)return next(new ErrorHandler("Page  Not Found",404));
+  return res.status(200).json({
+    status: "success",
+    product,
+  });
+});
+
+
+// update the product
+export const updateProduct = TryCatch(
+  async (req, res, next) => {
+  const { name, price, stock, category } = req.body;
+  const photo = req.file;
+  const product = await Product.findById(req.params.id);
+
+  if (!product) return next(new ErrorHandler("Product Not Found", 404));
+
+  if (photo) {
+    rm(product.photo!, () => {
+      console.log("Old Photo Deleted");
+    });
+    product.photo = photo.path;
+  }
+
+  if (name) product.name = name;
+  if (price) product.price = price;
+  if (stock) product.stock = stock;
+  if (category) product.category = category;
+
+  await product.save();
+
+    return res.status(201).json({
+      status: "success",
+      product,
+      message: "Product updated, successfully",
+    });
+  }
+);
+// Delete product
+export const deleteProduct = TryCatch(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return next(new ErrorHandler("Page  Not Found", 404));
+  rm(product.photo,()=>{
+        console.log("Photo removed");
+  })
+    await product.deleteOne();
+  return res.status(200).json({
+    status: "success",
+    message:"Product Deleted successfully"
   });
 });

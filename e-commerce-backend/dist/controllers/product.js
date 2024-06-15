@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
+exports.deleteProduct = exports.updateProduct = exports.getSingleProduct = exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
 const fs_1 = require("fs");
 const error_1 = require("../middlewares/error");
 const product_1 = require("../models/product");
+const utility_class_1 = __importDefault(require("../utils/utility-class"));
 exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, category, price, stock } = req.body;
     const photo = req.file;
@@ -68,5 +72,57 @@ exports.getAdminProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(vo
     return res.status(200).json({
         status: "success",
         product,
+    });
+}));
+// get single product 
+exports.getSingleProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const product = yield product_1.Product.findById(req.params.id);
+    if (!product)
+        return next(new utility_class_1.default("Page  Not Found", 404));
+    return res.status(200).json({
+        status: "success",
+        product,
+    });
+}));
+// update the product
+exports.updateProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, price, stock, category } = req.body;
+    const photo = req.file;
+    const product = yield product_1.Product.findById(req.params.id);
+    if (!product)
+        return next(new utility_class_1.default("Product Not Found", 404));
+    if (photo) {
+        (0, fs_1.rm)(product.photo, () => {
+            console.log("Old Photo Deleted");
+        });
+        product.photo = photo.path;
+    }
+    if (name)
+        product.name = name;
+    if (price)
+        product.price = price;
+    if (stock)
+        product.stock = stock;
+    if (category)
+        product.category = category;
+    yield product.save();
+    return res.status(201).json({
+        status: "success",
+        product,
+        message: "Product updated, successfully",
+    });
+}));
+// Delete product
+exports.deleteProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const product = yield product_1.Product.findById(req.params.id);
+    if (!product)
+        return next(new utility_class_1.default("Page  Not Found", 404));
+    (0, fs_1.rm)(product.photo, () => {
+        console.log("Photo removed");
+    });
+    yield product.deleteOne();
+    return res.status(200).json({
+        status: "success",
+        message: "Product Deleted successfully"
     });
 }));

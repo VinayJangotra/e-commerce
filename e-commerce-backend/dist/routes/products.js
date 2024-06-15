@@ -16,4 +16,6 @@ app.get("/latest", product_1.getLatestProduct);
 app.get("/category", product_1.getCategories);
 // Get all the prfoducts from the list
 app.get("/admin-products", auth_1.adminOnly, product_1.getAdminProduct);
+// Get single product and updation product
+app.route("/:id").get(product_1.getSingleProduct).put(multer_1.singleUpload, product_1.updateProduct).delete(multer_1.singleUpload, product_1.deleteProduct);
 exports.default = app;
