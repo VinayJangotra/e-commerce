@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.updateProduct = exports.getSingleProduct = exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
+exports.getAllProduct = exports.deleteProduct = exports.updateProduct = exports.getSingleProduct = exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
 const fs_1 = require("fs");
 const error_1 = require("../middlewares/error");
 const product_1 = require("../models/product");
 const utility_class_1 = __importDefault(require("../utils/utility-class"));
+// import  {faker} from "@faker-js/faker"
 exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, category, price, stock } = req.body;
     const photo = req.file;
@@ -126,3 +127,61 @@ exports.deleteProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
         message: "Product Deleted successfully"
     });
 }));
+// Search Functionality 
+exports.getAllProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { search, sort, category, price } = req.query;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(process.env.PRODUCT_PER_PAGE) || 8;
+    const skip = (page - 1) * limit;
+    const baseQuery = {};
+    if (search)
+        baseQuery.name = {
+            $regex: search,
+            $options: "i"
+        };
+    if (category)
+        baseQuery.category = category;
+    if (price)
+        baseQuery.price = {
+            $lte: Number(price)
+        };
+    // Pagination inn which we skip the products in order to show to the next page
+    const products = yield product_1.Product.find(baseQuery).sort(sort && { price: sort === "asc" ? 1 : -1 }).limit(limit).skip(skip);
+    const count = yield product_1.Product.find(baseQuery);
+    const totalPage = Math.ceil(count.length / limit);
+    return res.status(200).json({
+        status: "success",
+        products,
+        totalPage
+    });
+}));
+// This is used to generate the random products in the database using  the faker,js
+// const generateRandomProducts = async (count: number = 10) => {
+//   const products = [];
+//   for (let i = 0; i < count; i++) {
+//     const product = {
+//       name: faker.commerce.productName(),
+//       photo: "uploads\\ff78cc8d-af98-4abb-acab-08ee320d535c.jpeg",
+//       price: faker.commerce.price({ min: 1500, max: 80000, dec: 0 }),
+//       stock: faker.commerce.price({ min: 0, max: 100, dec: 0 }),
+//       category: faker.commerce.department(),
+//       createdAt: new Date(faker.date.past()),
+//       updatedAt: new Date(faker.date.recent()),
+//       __v: 0,
+//     };
+//     products.push(product);
+//   }
+//   await Product.create(products);
+//   console.log({ succecss: true });
+// };
+// generateRandomProducts(40);
+//delete the Products from the database
+// const deleteRandomsProducts = async (count: number = 10) => {
+//   const products = await Product.find({}).skip(2);
+//   for (let i = 0; i < products.length; i++) {
+//     const product = products[i];
+//     await product.deleteOne();
+//   }
+//   console.log({ succecss: true });
+// };
+// deleteRandomsProducts(40);
