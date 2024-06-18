@@ -11,5 +11,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.newOrder = void 0;
 const error_1 = require("../middlewares/error");
-exports.newOrder = (0, error_1.TryCatch)(() => __awaiter(void 0, void 0, void 0, function* () {
+const order_1 = require("../models/order");
+const features_1 = require("../utils/features");
+exports.newOrder = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { shippingInfo, orderItems, user, subtotal, tax, shippingCharges, discount, total } = req.body;
+    if (!shippingInfo ||
+        !orderItems ||
+        !user ||
+        subtotal === undefined ||
+        tax === undefined ||
+        shippingCharges === undefined ||
+        discount === undefined ||
+        total === undefined) {
+        return res.status(400).json({
+            success: false,
+            message: "Missing required fields",
+        });
+    }
+    yield order_1.Order.create({
+        shippingInfo,
+        orderItems,
+        user,
+        subtotal,
+        tax,
+        shippingCharges,
+        discount,
+        total
+    });
+    yield (0, features_1.reduceStock)(orderItems);
+    yield (0, features_1.invalidatesCache)({ product: true, order: true, admin: true });
+    return res.status(201).json({
+        success: true,
+        message: 'order placed successfully',
+    });
 }));

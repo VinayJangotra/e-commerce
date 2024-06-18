@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.invalidatesCache = exports.connectDB = void 0;
+exports.reduceStock = exports.invalidatesCache = exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const node_cache_1 = __importDefault(require("node-cache"));
 const product_1 = require("../models/product");
@@ -51,3 +51,14 @@ const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pr
     }
 });
 exports.invalidatesCache = invalidatesCache;
+const reduceStock = (orderItems) => __awaiter(void 0, void 0, void 0, function* () {
+    for (let i = 0; i < orderItems.length; i++) {
+        const order = orderItems[i];
+        const product = yield product_1.Product.findById(order.productId);
+        if (!product)
+            throw new Error('Product Not Found');
+        product.stock = product.stock - order.quantity;
+        yield product.save();
+    }
+});
+exports.reduceStock = reduceStock;
