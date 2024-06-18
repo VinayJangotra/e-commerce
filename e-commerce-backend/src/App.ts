@@ -2,7 +2,7 @@ import express from "express";
 
 import { connectDB } from "./utils/features";
 import { errorMiddlewware } from "./middlewares/error";
-
+import NodeCache from "node-cache"
 // Importing Routes
 import userRoutes from "./routes/user"; // Ensure the path is correct
 import productRoute from "./routes/products"
@@ -11,6 +11,7 @@ const app = express();
 app.use(express.json());
 const port = process.env.PORT || 3000; 
 connectDB();// Use environment variable or default to 3000
+export const myCache = new NodeCache();
 app.get("/",(req,res)=>{
     res.send("Hello World");
 })

@@ -1,14 +1,14 @@
 import express from "express";
 import { adminOnly } from "../middlewares/auth";
 import { singleUpload } from "../middlewares/multer";
-import { newProduct,getLatestProduct, getCategories, getAdminProduct, getSingleProduct, updateProduct, deleteProduct, getAllProduct } from "../controllers/product";
+import { newProduct,getlatestProducts, getCategories, getAdminProduct, getSingleProduct, updateProduct, deleteProduct, getAllProduct } from "../controllers/product";
 const app = express.Router();
 // Creation of the new product
 app.post("/new",singleUpload,newProduct);
 // Search Functionality get all the products with filters
 app.get("/all",getAllProduct);
 // Get the latest product
-app.get("/latest",getLatestProduct);
+app.get("/latest",getlatestProducts);
 //g Get all the categories
 app.get("/category",getCategories)
 // Get all the prfoducts from the list

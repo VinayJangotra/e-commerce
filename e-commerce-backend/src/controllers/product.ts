@@ -1,9 +1,17 @@
 import { rm } from "fs";
 import { TryCatch } from "../middlewares/error";
 import { Product } from "../models/product";
-import { BaseQuery, NewProductRequestBody, SearchRequestQuery } from "../types/types";
+import {
+  BaseQuery,
+  NewProductRequestBody,
+  SearchRequestQuery,
+} from "../types/types";
 import { Request } from "express";
 import ErrorHandler from "../utils/utility-class";
+// import { myCache } from "../App";
+import NodeCache from "node-cache";
+import { invalidatesCache } from "../utils/features";
+const myCache = new NodeCache();
 // import  {faker} from "@faker-js/faker"
 
 export const newProduct = TryCatch(
@@ -16,11 +24,10 @@ export const newProduct = TryCatch(
       });
     }
     if (!name || !category || !price || !stock) {
-        // remove the photo if it already exist
-        rm(photo.path,()=>{
-            console.log("Photo removed");
-        
-        })
+      // remove the photo if it already exist
+      rm(photo.path, () => {
+        console.log("Photo removed");
+      });
       return res.status(411).json({
         message: "All fields are required",
       });
@@ -34,7 +41,7 @@ export const newProduct = TryCatch(
       stock,
       photo: photo?.path,
     });
-
+    await invalidatesCache({product:true})
     return res.status(201).json({
       status: "success",
       message: "Product created successfully",
@@ -43,50 +50,75 @@ export const newProduct = TryCatch(
 );
 
 // Get the latest product
-export const getLatestProduct = TryCatch(
-  async (req, res, next) => {
-    // Get the products at the descending order on the abssis of creation if the we take 1 then it is sorted as ascending order
-    const product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-    return res.status(200).json({
-      status: "success",
-      product,
-    });
+
+// Revalidate on new Update ordelete product saand new order
+
+export const getlatestProducts = TryCatch(async (req, res, next) => {
+  let products;
+
+  if (myCache.has("latest-products"))
+    products = JSON.parse(myCache.get("latest-products") as string);
+  else {
+    products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+    myCache.set("latest-products", JSON.stringify(products));
   }
-);
+
+  return res.status(200).json({
+    success: true,
+    products,
+  });
+});
 // Get all the categories
-export const getCategories = TryCatch(
-  async (req, res, next) => {
-    // on the basis of the category field the  product is provided the categories
-    const categories = await Product.distinct("category");
-    return res.status(200).json({
-      status: "success",
-      categories,
-    });
+export const getCategories = TryCatch(async (req, res, next) => {
+  // on the basis of the category field the  product is provided the categories
+  let categories;
+  if(myCache.has("categories")){
+    categories = JSON.parse(myCache.get("categories") as string);
   }
-);
+ else{
+  categories = await Product.distinct("category");
+  myCache.set("categories", JSON.stringify(categories));
+} 
+  return res.status(200).json({
+    status: "success",
+    categories,
+  });
+});
 ///Get all the products a as a admin
 export const getAdminProduct = TryCatch(async (req, res, next) => {
   // It gives all the products that are available in the list
-  const product = await Product.find({});
+  let product;
+  if(myCache.has("all-products")){
+    product = JSON.parse(myCache.get("all-products") as string);
+  }
+  else{
+    product = await Product.find({});
+    myCache.set("all-products", JSON.stringify(product));
+  }
   return res.status(200).json({
     status: "success",
     product,
   });
 });
-// get single product 
+// get single product
 export const getSingleProduct = TryCatch(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
-  if(!product)return next(new ErrorHandler("Page  Not Found",404));
+  let product;
+  if(myCache.has(`product-${req.params.id}`)){
+    product = JSON.parse(myCache.get(`product-${req.params.id}`) as string);
+  }
+  else{
+   product = await Product.findById(req.params.id);
+  if (!product) return next(new ErrorHandler("Page  Not Found", 404));
+  myCache.set(`product-${req.params.id}`,JSON.stringify(product));
+  }
   return res.status(200).json({
     status: "success",
     product,
   });
 });
-
 
 // update the product
-export const updateProduct = TryCatch(
-  async (req, res, next) => {
+export const updateProduct = TryCatch(async (req, res, next) => {
   const { name, price, stock, category } = req.body;
   const photo = req.file;
   const product = await Product.findById(req.params.id);
@@ -106,55 +138,61 @@ export const updateProduct = TryCatch(
   if (category) product.category = category;
 
   await product.save();
-
-    return res.status(201).json({
-      status: "success",
-      product,
-      message: "Product updated, successfully",
-    });
-  }
-);
+  await invalidatesCache({ product: true });
+  return res.status(201).json({
+    status: "success",
+    product,
+    message: "Product updated, successfully",
+  });
+});
 // Delete product
 export const deleteProduct = TryCatch(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
   if (!product) return next(new ErrorHandler("Page  Not Found", 404));
-  rm(product.photo,()=>{
-        console.log("Photo removed");
-  })
-    await product.deleteOne();
+  rm(product.photo, () => {
+    console.log("Photo removed");
+  });
+  await product.deleteOne();
+ await invalidatesCache({ product: true });
   return res.status(200).json({
     status: "success",
-    message:"Product Deleted successfully"
+    message: "Product Deleted successfully",
   });
 });
 
-// Search Functionality 
-export const getAllProduct = TryCatch(async (req:Request<{},{},{},SearchRequestQuery>, res, next) => {
-  const {search,sort,category,price}=req.query;
-  const page =Number(req.query.page)|| 1;
-  const limit = Number(process.env.PRODUCT_PER_PAGE)||8;
-  const skip = (page - 1) * limit;
-  const baseQuery:BaseQuery={};
-  if(search)baseQuery.name={
-    $regex:search,
-    $options:"i"
-  };
-  if(category)baseQuery.category=category;
-  if(price)baseQuery.price={
-    $lte:Number(price)
-  
-  };
+// Search Functionality
+export const getAllProduct = TryCatch(
+  async (req: Request<{}, {}, {}, SearchRequestQuery>, res, next) => {
+    const { search, sort, category, price } = req.query;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(process.env.PRODUCT_PER_PAGE) || 8;
+    const skip = (page - 1) * limit;
+    const baseQuery: BaseQuery = {};
+    if (search)
+      baseQuery.name = {
+        $regex: search,
+        $options: "i",
+      };
+    if (category) baseQuery.category = category;
+    if (price)
+      baseQuery.price = {
+        $lte: Number(price),
+      };
 
-  // Pagination inn which we skip the products in order to show to the next page
-  const products = await Product.find(baseQuery).sort(sort &&{ price: sort==="asc"?1:-1 }).limit(limit).skip(skip);
-  const count = await Product.find(baseQuery);
-  const totalPage= Math.ceil(count.length/limit);
-  return res.status(200).json({
-    status: "success",
-    products,
-    totalPage
-  });
-}); 
+    // Pagination inn which we skip the products in order to show to the next page
+    const products = await Product.find(baseQuery)
+      .sort(sort && { price: sort === "asc" ? 1 : -1 })
+      .limit(limit)
+      .skip(skip);
+    const count = await Product.find(baseQuery);
+    const totalPage = Math.ceil(count.length / limit);
+    return res.status(200).json({
+      status: "success",
+      products,
+      totalPage,
+    });
+  }
+);
 // This is used to generate the random products in the database using  the faker,js
 // const generateRandomProducts = async (count: number = 10) => {
 //   const products = [];

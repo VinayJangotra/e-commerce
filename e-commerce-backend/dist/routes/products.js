@@ -13,7 +13,7 @@ app.post("/new", multer_1.singleUpload, product_1.newProduct);
 // Search Functionality get all the products with filters
 app.get("/all", product_1.getAllProduct);
 // Get the latest product
-app.get("/latest", product_1.getLatestProduct);
+app.get("/latest", product_1.getlatestProducts);
 //g Get all the categories
 app.get("/category", product_1.getCategories);
 // Get all the prfoducts from the list

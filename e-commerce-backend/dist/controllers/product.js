@@ -12,11 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProduct = exports.deleteProduct = exports.updateProduct = exports.getSingleProduct = exports.getAdminProduct = exports.getCategories = exports.getLatestProduct = exports.newProduct = void 0;
+exports.getAllProduct = exports.deleteProduct = exports.updateProduct = exports.getSingleProduct = exports.getAdminProduct = exports.getCategories = exports.getlatestProducts = exports.newProduct = void 0;
 const fs_1 = require("fs");
 const error_1 = require("../middlewares/error");
 const product_1 = require("../models/product");
 const utility_class_1 = __importDefault(require("../utils/utility-class"));
+// import { myCache } from "../App";
+const node_cache_1 = __importDefault(require("node-cache"));
+const features_1 = require("../utils/features");
+const myCache = new node_cache_1.default();
 // import  {faker} from "@faker-js/faker"
 exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, category, price, stock } = req.body;
@@ -43,24 +47,38 @@ exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0,
         stock,
         photo: photo === null || photo === void 0 ? void 0 : photo.path,
     });
+    yield (0, features_1.invalidatesCache)({ product: true });
     return res.status(201).json({
         status: "success",
         message: "Product created successfully",
     });
 }));
 // Get the latest product
-exports.getLatestProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // Get the products at the descending order on the abssis of creation if the we take 1 then it is sorted as ascending order
-    const product = yield product_1.Product.find({}).sort({ createdAt: -1 }).limit(5);
+// Revalidate on new Update ordelete product saand new order
+exports.getlatestProducts = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let products;
+    if (myCache.has("latest-products"))
+        products = JSON.parse(myCache.get("latest-products"));
+    else {
+        products = yield product_1.Product.find({}).sort({ createdAt: -1 }).limit(5);
+        myCache.set("latest-products", JSON.stringify(products));
+    }
     return res.status(200).json({
-        status: "success",
-        product,
+        success: true,
+        products,
     });
 }));
 // Get all the categories
 exports.getCategories = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // on the basis of the category field the  product is provided the categories
-    const categories = yield product_1.Product.distinct("category");
+    let categories;
+    if (myCache.has("categories")) {
+        categories = JSON.parse(myCache.get("categories"));
+    }
+    else {
+        categories = yield product_1.Product.distinct("category");
+        myCache.set("categories", JSON.stringify(categories));
+    }
     return res.status(200).json({
         status: "success",
         categories,
@@ -69,17 +87,31 @@ exports.getCategories = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
 ///Get all the products a as a admin
 exports.getAdminProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // It gives all the products that are available in the list
-    const product = yield product_1.Product.find({});
+    let product;
+    if (myCache.has("all-products")) {
+        product = JSON.parse(myCache.get("all-products"));
+    }
+    else {
+        product = yield product_1.Product.find({});
+        myCache.set("all-products", JSON.stringify(product));
+    }
     return res.status(200).json({
         status: "success",
         product,
     });
 }));
-// get single product 
+// get single product
 exports.getSingleProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const product = yield product_1.Product.findById(req.params.id);
-    if (!product)
-        return next(new utility_class_1.default("Page  Not Found", 404));
+    let product;
+    if (myCache.has(`product-${req.params.id}`)) {
+        product = JSON.parse(myCache.get(`product-${req.params.id}`));
+    }
+    else {
+        product = yield product_1.Product.findById(req.params.id);
+        if (!product)
+            return next(new utility_class_1.default("Page  Not Found", 404));
+        myCache.set(`product-${req.params.id}`, JSON.stringify(product));
+    }
     return res.status(200).json({
         status: "success",
         product,
@@ -107,6 +139,7 @@ exports.updateProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
     if (category)
         product.category = category;
     yield product.save();
+    yield (0, features_1.invalidatesCache)({ product: true });
     return res.status(201).json({
         status: "success",
         product,
@@ -122,12 +155,13 @@ exports.deleteProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
         console.log("Photo removed");
     });
     yield product.deleteOne();
+    yield (0, features_1.invalidatesCache)({ product: true });
     return res.status(200).json({
         status: "success",
-        message: "Product Deleted successfully"
+        message: "Product Deleted successfully",
     });
 }));
-// Search Functionality 
+// Search Functionality
 exports.getAllProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { search, sort, category, price } = req.query;
     const page = Number(req.query.page) || 1;
@@ -137,22 +171,25 @@ exports.getAllProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
     if (search)
         baseQuery.name = {
             $regex: search,
-            $options: "i"
+            $options: "i",
         };
     if (category)
         baseQuery.category = category;
     if (price)
         baseQuery.price = {
-            $lte: Number(price)
+            $lte: Number(price),
         };
     // Pagination inn which we skip the products in order to show to the next page
-    const products = yield product_1.Product.find(baseQuery).sort(sort && { price: sort === "asc" ? 1 : -1 }).limit(limit).skip(skip);
+    const products = yield product_1.Product.find(baseQuery)
+        .sort(sort && { price: sort === "asc" ? 1 : -1 })
+        .limit(limit)
+        .skip(skip);
     const count = yield product_1.Product.find(baseQuery);
     const totalPage = Math.ceil(count.length / limit);
     return res.status(200).json({
         status: "success",
         products,
-        totalPage
+        totalPage,
     });
 }));
 // This is used to generate the random products in the database using  the faker,js
