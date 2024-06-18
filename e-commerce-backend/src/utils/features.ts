@@ -3,8 +3,8 @@ import { InvalidateCacheProps } from '../types/types';
 import NodeCache from "node-cache";
 import { Product } from '../models/product';
 const myCache = new NodeCache();
-export const connectDB= ()=>{
-    mongoose.connect("mongodb://localhost:27017", {
+export const connectDB= (uri:string)=>{
+    mongoose.connect(uri, {
         dbName:"E-commerce_24"
       })
       .then(() => {

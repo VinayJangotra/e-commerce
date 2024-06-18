@@ -17,8 +17,8 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const node_cache_1 = __importDefault(require("node-cache"));
 const product_1 = require("../models/product");
 const myCache = new node_cache_1.default();
-const connectDB = () => {
-    mongoose_1.default.connect("mongodb://localhost:27017", {
+const connectDB = (uri) => {
+    mongoose_1.default.connect(uri, {
         dbName: "E-commerce_24"
     })
         .then(() => {
