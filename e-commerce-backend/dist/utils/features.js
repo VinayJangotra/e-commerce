@@ -18,8 +18,9 @@ const node_cache_1 = __importDefault(require("node-cache"));
 const product_1 = require("../models/product");
 const myCache = new node_cache_1.default();
 const connectDB = (uri) => {
-    mongoose_1.default.connect(uri, {
-        dbName: "E-commerce_24"
+    mongoose_1.default
+        .connect(uri, {
+        dbName: "E-commerce_24",
     })
         .then(() => {
         console.log("Database connected successfully");
@@ -30,12 +31,12 @@ const connectDB = (uri) => {
 };
 exports.connectDB = connectDB;
 // This function is used to delete the cache in the memory
-const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ product, order, admin }) {
+const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ product, order, admin, userId, orderId }) {
     if (product) {
         const productKeys = [
             "latest-products",
             "categories",
-            "all-products"
+            "all-products",
         ];
         const products = yield product_1.Product.find({}).select("_id");
         products.forEach((key) => {
@@ -44,7 +45,16 @@ const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ pr
         myCache.del(productKeys);
     }
     if (order) {
-        myCache.del("latest-orders");
+        const orderKeys = [
+            "all-orders",
+            `my-order-${userId}`,
+            `order-${orderId}`,
+        ];
+        // const orders = await Order.find({}).select("_id");
+        // orders.forEach((key) => {
+        //   orderKeys.push(`order-${key._id}`);
+        // });
+        myCache.del(orderKeys);
     }
     if (admin) {
         myCache.del("latest-admins");
@@ -56,7 +66,7 @@ const reduceStock = (orderItems) => __awaiter(void 0, void 0, void 0, function* 
         const order = orderItems[i];
         const product = yield product_1.Product.findById(order.productId);
         if (!product)
-            throw new Error('Product Not Found');
+            throw new Error("Product Not Found");
         product.stock = product.stock - order.quantity;
         yield product.save();
     }
