@@ -14,6 +14,7 @@ const dotenv_1 = require("dotenv");
 const user_1 = __importDefault(require("./routes/user")); // Ensure the path is correct
 const products_1 = __importDefault(require("./routes/products"));
 const orders_1 = __importDefault(require("./routes/orders"));
+const payments_1 = __importDefault(require("./routes/payments"));
 // Configuring the env file in the website
 (0, dotenv_1.config)({
     path: "./.env"
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/products", products_1.default);
 app.use("/api/v1/user", user_1.default);
 app.use("/api/v1/order", orders_1.default);
+app.use("/api/v1/payment", payments_1.default);
 app.use("/uploads", express_1.default.static("uploads"));
 app.use(error_1.errorMiddlewware);
 app.listen(port, () => {
