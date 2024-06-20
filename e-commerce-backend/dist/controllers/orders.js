@@ -34,7 +34,7 @@ exports.newOrder = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, v
             message: "Missing required fields",
         });
     }
-    yield order_1.Order.create({
+    const order = yield order_1.Order.create({
         shippingInfo,
         orderItems,
         user,
@@ -45,7 +45,13 @@ exports.newOrder = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, v
         total
     });
     yield (0, features_1.reduceStock)(orderItems);
-    yield (0, features_1.invalidatesCache)({ product: true, order: true, admin: true, userId: user });
+    yield (0, features_1.invalidatesCache)({
+        product: true,
+        order: true,
+        admin: true,
+        userId: user,
+        productId: order.orderItems.map((i) => String(i.productId)),
+    });
     return res.status(201).json({
         success: true,
         message: 'order placed successfully',

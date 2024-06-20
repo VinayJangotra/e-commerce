@@ -24,7 +24,7 @@ export const newOrder=TryCatch(async(req:Request<{},{},NewOrderRequestBody>,res,
         });
       }
 
-    await Order.create({
+    const order=await Order.create({
         shippingInfo,
         orderItems,
         user,
@@ -36,7 +36,13 @@ export const newOrder=TryCatch(async(req:Request<{},{},NewOrderRequestBody>,res,
     })
   await   reduceStock(orderItems);
 
-  await invalidatesCache({product:true,order:true,admin:true,userId:user});
+  await invalidatesCache({
+    product: true,
+    order: true,
+    admin: true,
+    userId: user,
+    productId: order.orderItems.map((i) => String(i.productId)),
+  });
   return res.status(201).json({
     success:true,
     message:'order placed successfully',

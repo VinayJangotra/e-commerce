@@ -47,7 +47,7 @@ exports.newProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0,
         stock,
         photo: photo === null || photo === void 0 ? void 0 : photo.path,
     });
-    yield (0, features_1.invalidatesCache)({ product: true });
+    yield (0, features_1.invalidatesCache)({ product: true, admin: true });
     return res.status(201).json({
         status: "success",
         message: "Product created successfully",
@@ -139,7 +139,7 @@ exports.updateProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
     if (category)
         product.category = category;
     yield product.save();
-    yield (0, features_1.invalidatesCache)({ product: true });
+    yield (0, features_1.invalidatesCache)({ product: true, productId: String(product._id) });
     return res.status(201).json({
         status: "success",
         product,

@@ -31,17 +31,21 @@ const connectDB = (uri) => {
 };
 exports.connectDB = connectDB;
 // This function is used to delete the cache in the memory
-const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ product, order, admin, userId, orderId }) {
+const invalidatesCache = (_a) => __awaiter(void 0, [_a], void 0, function* ({ product, order, admin, userId, orderId, productId }) {
     if (product) {
         const productKeys = [
             "latest-products",
             "categories",
             "all-products",
         ];
-        const products = yield product_1.Product.find({}).select("_id");
-        products.forEach((key) => {
-            productKeys.push(`product-${key._id}`);
-        });
+        if (typeof productId === "string")
+            productKeys.push(`product-${productId}`);
+        if (typeof productId === "object")
+            productId.forEach((i) => productKeys.push(`product-${i}`));
+        // const products = await Product.find({}).select("_id");
+        // products.forEach((key) => {
+        //   productKeys.push(`product-${key._id}`);
+        // });
         myCache.del(productKeys);
     }
     if (order) {

@@ -4,7 +4,7 @@ import { singleUpload } from "../middlewares/multer";
 import { newProduct,getlatestProducts, getCategories, getAdminProduct, getSingleProduct, updateProduct, deleteProduct, getAllProduct } from "../controllers/product";
 const app = express.Router();
 // Creation of the new product
-app.post("/new",singleUpload,newProduct);
+app.post("/new",singleUpload,adminOnly,newProduct);
 // Search Functionality get all the products with filters
 app.get("/all",getAllProduct);
 // Get the latest product

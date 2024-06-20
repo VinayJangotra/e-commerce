@@ -9,7 +9,7 @@ const multer_1 = require("../middlewares/multer");
 const product_1 = require("../controllers/product");
 const app = express_1.default.Router();
 // Creation of the new product
-app.post("/new", multer_1.singleUpload, product_1.newProduct);
+app.post("/new", multer_1.singleUpload, auth_1.adminOnly, product_1.newProduct);
 // Search Functionality get all the products with filters
 app.get("/all", product_1.getAllProduct);
 // Get the latest product
