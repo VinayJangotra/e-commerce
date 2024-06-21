@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reduceStock = exports.invalidatesCache = exports.connectDB = void 0;
+exports.getChartData = exports.getInventories = exports.calculatePercentage = exports.reduceStock = exports.invalidatesCache = exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const node_cache_1 = __importDefault(require("node-cache"));
 const product_1 = require("../models/product");
@@ -76,3 +76,39 @@ const reduceStock = (orderItems) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.reduceStock = reduceStock;
+const calculatePercentage = (thisMonth, lastMonth) => {
+    if (lastMonth === 0)
+        return thisMonth * 100;
+    const percent = (thisMonth / lastMonth) * 100;
+    return Number(percent.toFixed(0));
+};
+exports.calculatePercentage = calculatePercentage;
+const getInventories = (_b) => __awaiter(void 0, [_b], void 0, function* ({ categories, productsCount, }) {
+    const categoriesCountPromise = categories.map((category) => product_1.Product.countDocuments({ category }));
+    const categoriesCount = yield Promise.all(categoriesCountPromise);
+    const categoryCount = [];
+    categories.forEach((category, i) => {
+        categoryCount.push({
+            [category]: Math.round((categoriesCount[i] / productsCount) * 100),
+        });
+    });
+    return categoryCount;
+});
+exports.getInventories = getInventories;
+const getChartData = ({ length, docArr, today, property, }) => {
+    const data = new Array(length).fill(0);
+    docArr.forEach((i) => {
+        const creationDate = i.createdAt;
+        const monthDiff = (today.getMonth() - creationDate.getMonth() + 12) % 12;
+        if (monthDiff < length) {
+            if (property) {
+                data[length - monthDiff - 1] += i[property];
+            }
+            else {
+                data[length - monthDiff - 1] += 1;
+            }
+        }
+    });
+    return data;
+};
+exports.getChartData = getChartData;

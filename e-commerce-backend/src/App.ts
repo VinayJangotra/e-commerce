@@ -8,7 +8,8 @@ import { config } from "dotenv";
 import userRoutes from "./routes/user"; // Ensure the path is correct
 import productRoute from "./routes/products"
 import orderRoute from "./routes/orders";
-import paymentRoute from "./routes/payments"
+import paymentRoute from "./routes/payments";
+import DashBoardRoute from "./routes/stats"
 // Configuring the env file in the website
 config({
   path: "./.env"
@@ -30,6 +31,7 @@ app.use("/api/v1/products", productRoute);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/order",orderRoute);
 app.use("/api/v1/payment",paymentRoute)
+app.use("/api/v1/dashboard", DashBoardRoute);
 
 app.use("/uploads",express.static("uploads"));
 app.use(errorMiddlewware);
