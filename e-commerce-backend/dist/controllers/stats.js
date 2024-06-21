@@ -230,5 +230,53 @@ exports.getPieCharts = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 
         charts,
     });
 }));
-exports.getBarCharts = (0, error_1.TryCatch)(() => __awaiter(void 0, void 0, void 0, function* () { }));
+exports.getBarCharts = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let charts;
+    const key = "admin-bar-charts";
+    if (myCache.has(key))
+        charts = JSON.parse(myCache.get(key));
+    else {
+        const today = new Date();
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+        const sixMonthProductPromise = product_1.Product.find({
+            createdAt: {
+                $gte: sixMonthsAgo,
+                $lte: today,
+            },
+        }).select("createdAt");
+        const sixMonthUsersPromise = user_1.User.find({
+            createdAt: {
+                $gte: sixMonthsAgo,
+                $lte: today,
+            },
+        }).select("createdAt");
+        const twelveMonthOrdersPromise = order_1.Order.find({
+            createdAt: {
+                $gte: twelveMonthsAgo,
+                $lte: today,
+            },
+        }).select("createdAt");
+        const [products, users, orders] = yield Promise.all([
+            sixMonthProductPromise,
+            sixMonthUsersPromise,
+            twelveMonthOrdersPromise,
+        ]);
+        const productCounts = (0, features_1.getChartData)({ length: 6, today, docArr: products });
+        const usersCounts = (0, features_1.getChartData)({ length: 6, today, docArr: users });
+        const ordersCounts = (0, features_1.getChartData)({ length: 12, today, docArr: orders });
+        charts = {
+            users: usersCounts,
+            products: productCounts,
+            orders: ordersCounts,
+        };
+        myCache.set(key, JSON.stringify(charts));
+    }
+    return res.status(200).json({
+        success: true,
+        charts,
+    });
+}));
 exports.getLineCharts = (0, error_1.TryCatch)(() => __awaiter(void 0, void 0, void 0, function* () { }));
