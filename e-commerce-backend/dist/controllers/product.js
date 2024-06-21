@@ -139,7 +139,11 @@ exports.updateProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
     if (category)
         product.category = category;
     yield product.save();
-    yield (0, features_1.invalidatesCache)({ product: true, productId: String(product._id) });
+    yield (0, features_1.invalidatesCache)({
+        product: true,
+        productId: String(product._id),
+        admin: true,
+    });
     return res.status(201).json({
         status: "success",
         product,
@@ -155,7 +159,7 @@ exports.deleteProduct = (0, error_1.TryCatch)((req, res, next) => __awaiter(void
         console.log("Photo removed");
     });
     yield product.deleteOne();
-    yield (0, features_1.invalidatesCache)({ product: true });
+    yield (0, features_1.invalidatesCache)({ product: true, admin: true });
     return res.status(200).json({
         status: "success",
         message: "Product Deleted successfully",

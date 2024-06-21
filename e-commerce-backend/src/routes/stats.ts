@@ -8,7 +8,7 @@ import {
   getPieCharts,
 } from "../controllers/stats";
 const app = express.Router();
-app.get("/stats", getDashBoardStats);
+app.get("/stats",adminOnly, getDashBoardStats);
 app.get("/pie",adminOnly,getPieCharts);
 app.get("/bar",adminOnly,getBarCharts);
 app.get("/line",adminOnly,getLineCharts);
