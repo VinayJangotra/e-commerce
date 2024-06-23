@@ -1,18 +1,48 @@
+import Stripe from "stripe";
 import { TryCatch } from "../middlewares/error";
 import { Coupon } from "../models/Coupon";
 import ErrorHandler from "../utils/utility-class";
+import { config } from "dotenv";
+config({
+  path: "./.env",
+});
+const stripeKey = process.env.STRIPE_KEY || "";
 
-export const newCoupon = TryCatch(async(req,res,next)=>{
-    const {coupon, amount}= req.body;
-    if(!coupon || !amount)return next(new ErrorHandler("Please enter both coupon and amount",400))
-    await Coupon.create({
-        code:coupon,amount
-    })
-    return res.status(201).json({
-        success:true,
-        message:"Coupon created successfully"
-    })
-})
+if (!stripeKey) {
+  throw new Error("STRIPE_KEY is not set in the environment variables");
+}
+
+const stripe = new Stripe(stripeKey);
+
+// Stripe Payment Methods
+export const createPaymentIntent = TryCatch(async (req, res, next) => {
+  const { amount } = req.body;
+
+  if (!amount) return next(new ErrorHandler("Please enter amount", 400));
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Number(amount) * 100,
+    currency: "inr",
+  });
+
+  return res.status(201).json({
+    success: true,
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+export const newCoupon = TryCatch(async (req, res, next) => {
+  const { coupon, amount } = req.body;
+  if (!coupon || !amount)
+    return next(new ErrorHandler("Please enter both coupon and amount", 400));
+  await Coupon.create({
+    code: coupon,
+    amount,
+  });
+  return res.status(201).json({
+    success: true,
+    message: "Coupon created successfully",
+  });
+});
 // Apply the discount
 
 export const applyDiscount = TryCatch(async (req, res, next) => {
@@ -39,9 +69,9 @@ export const allCoupons = TryCatch(async (req, res, next) => {
 export const deleteCoupon = TryCatch(async (req, res, next) => {
   const { id } = req.params;
   const coupon = await Coupon.findByIdAndDelete(id);
-    if (!coupon) return next(new ErrorHandler("Invalid Coupon Code", 400));
-    return res.status(200).json({
-        success: true,
-        message: "Coupon deleted successfully",
-        });
+  if (!coupon) return next(new ErrorHandler("Invalid Coupon Code", 400));
+  return res.status(200).json({
+    success: true,
+    message: "Coupon deleted successfully",
+  });
 });

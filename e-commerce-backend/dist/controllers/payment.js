@@ -12,20 +12,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCoupon = exports.allCoupons = exports.applyDiscount = exports.newCoupon = void 0;
+exports.deleteCoupon = exports.allCoupons = exports.applyDiscount = exports.newCoupon = exports.createPaymentIntent = void 0;
+const stripe_1 = __importDefault(require("stripe"));
 const error_1 = require("../middlewares/error");
 const Coupon_1 = require("../models/Coupon");
 const utility_class_1 = __importDefault(require("../utils/utility-class"));
+const dotenv_1 = require("dotenv");
+(0, dotenv_1.config)({
+    path: "./.env",
+});
+const stripeKey = process.env.STRIPE_KEY || "";
+if (!stripeKey) {
+    throw new Error("STRIPE_KEY is not set in the environment variables");
+}
+const stripe = new stripe_1.default(stripeKey);
+// Stripe Payment Methods
+exports.createPaymentIntent = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { amount } = req.body;
+    if (!amount)
+        return next(new utility_class_1.default("Please enter amount", 400));
+    const paymentIntent = yield stripe.paymentIntents.create({
+        amount: Number(amount) * 100,
+        currency: "inr",
+    });
+    return res.status(201).json({
+        success: true,
+        clientSecret: paymentIntent.client_secret,
+    });
+}));
 exports.newCoupon = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { coupon, amount } = req.body;
     if (!coupon || !amount)
         return next(new utility_class_1.default("Please enter both coupon and amount", 400));
     yield Coupon_1.Coupon.create({
-        code: coupon, amount
+        code: coupon,
+        amount,
     });
     return res.status(201).json({
         success: true,
-        message: "Coupon created successfully"
+        message: "Coupon created successfully",
     });
 }));
 // Apply the discount

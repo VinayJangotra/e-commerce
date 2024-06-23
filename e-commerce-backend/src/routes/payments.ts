@@ -1,7 +1,9 @@
 import express from "express";
 import { adminOnly } from "../middlewares/auth";
-import { allCoupons, applyDiscount, newCoupon ,deleteCoupon} from "../controllers/payment";
+import { allCoupons, applyDiscount, newCoupon ,deleteCoupon, createPaymentIntent} from "../controllers/payment";
 const app = express.Router();
+// Sripe Paymwent
+app.post("/create",createPaymentIntent)
 // Creation of the new product
 app.post("/coupon/new",adminOnly,newCoupon);
 

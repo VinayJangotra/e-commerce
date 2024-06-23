@@ -10,6 +10,7 @@ import productRoute from "./routes/products"
 import orderRoute from "./routes/orders";
 import paymentRoute from "./routes/payments";
 import DashBoardRoute from "./routes/stats"
+import Stripe from "stripe";
 // Configuring the env file in the website
 config({
   path: "./.env"

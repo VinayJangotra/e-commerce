@@ -7,6 +7,8 @@ const express_1 = __importDefault(require("express"));
 const auth_1 = require("../middlewares/auth");
 const payment_1 = require("../controllers/payment");
 const app = express_1.default.Router();
+// Sripe Paymwent
+app.post("/create", payment_1.createPaymentIntent);
 // Creation of the new product
 app.post("/coupon/new", auth_1.adminOnly, payment_1.newCoupon);
 // Route fo the checking the existence of the coupon and apply the discount
