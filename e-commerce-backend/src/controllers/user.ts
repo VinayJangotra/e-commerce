@@ -55,8 +55,8 @@ export const newUser = TryCatch(
         dob: new Date(dob),
       });
       res.status(201).json({
-        status: "success",
-        data: { user },
+        success:true,
+        message: `Welcome ${user.name}`
       });
     
   }
@@ -65,9 +65,9 @@ export const newUser = TryCatch(
 export const getAllUsers = TryCatch(async (req,res,next)=>{
   const users=await User.find();
   res.status(200).json({
-    status:"success",
-    data:{users}
-  })
+    success: true,
+    message: `Welcome ${users}`,
+  });
 })
 // Get the User by Id
 export const getUser = TryCatch(async (req, res, next) => {
@@ -79,8 +79,8 @@ export const getUser = TryCatch(async (req, res, next) => {
     })
   }
   res.status(200).json({
-    status: "success",
-    data: { user },
+    success: true,
+    message: `Welcome ${user.name}`,
   });
 });
 
@@ -96,7 +96,7 @@ export const deleteUser = TryCatch(async (req, res, next) => {
   await user.deleteOne();
 
   res.status(200).json({
-    status: "User Deleted Successfully",
-    data: { user },
+    success: true,
+    message: `User ${user.name} deleted`,
   });
 });

@@ -59,16 +59,16 @@ exports.newUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, vo
         dob: new Date(dob),
     });
     res.status(201).json({
-        status: "success",
-        data: { user },
+        success: true,
+        message: `Welcome ${user.name}`
     });
 }));
 // Get all The Users
 exports.getAllUsers = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield user_1.User.find();
     res.status(200).json({
-        status: "success",
-        data: { users }
+        success: true,
+        message: `Welcome ${users}`,
     });
 }));
 // Get the User by Id
@@ -81,8 +81,8 @@ exports.getUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0, vo
         });
     }
     res.status(200).json({
-        status: "success",
-        data: { user },
+        success: true,
+        message: `Welcome ${user.name}`,
     });
 }));
 // Delete the User
@@ -96,7 +96,7 @@ exports.deleteUser = (0, error_1.TryCatch)((req, res, next) => __awaiter(void 0,
     }
     yield user.deleteOne();
     res.status(200).json({
-        status: "User Deleted Successfully",
-        data: { user },
+        success: true,
+        message: `User ${user.name} deleted`,
     });
 }));

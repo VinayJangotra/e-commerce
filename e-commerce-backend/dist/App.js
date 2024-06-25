@@ -16,12 +16,15 @@ const products_1 = __importDefault(require("./routes/products"));
 const orders_1 = __importDefault(require("./routes/orders"));
 const payments_1 = __importDefault(require("./routes/payments"));
 const stats_1 = __importDefault(require("./routes/stats"));
+const cors_1 = __importDefault(require("cors"));
 // Configuring the env file in the website
 (0, dotenv_1.config)({
-    path: "./.env"
+    path: "./.env",
 });
 const app = (0, express_1.default)();
-app.use(express_1.default.json());
+// Middleware
+app.use((0, cors_1.default)()); // CORS middleware should be one of the first to ensure CORS policy is applied
+app.use(express_1.default.json()); // For parsing application/json
 app.use((0, morgan_1.default)("dev"));
 const port = process.env.PORT || 3000;
 const mongoURI = process.env.MONGO_URI || "";

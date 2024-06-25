@@ -11,14 +11,18 @@ import orderRoute from "./routes/orders";
 import paymentRoute from "./routes/payments";
 import DashBoardRoute from "./routes/stats"
 import Stripe from "stripe";
+import cors from "cors"
 // Configuring the env file in the website
 config({
-  path: "./.env"
+  path: "./.env",
 });
 
 const app = express();
-app.use(express.json());
-app.use(morgan("dev"))
+
+// Middleware
+app.use(cors()); // CORS middleware should be one of the first to ensure CORS policy is applied
+app.use(express.json()); // For parsing application/json
+app.use(morgan("dev"));
 
 const port = process.env.PORT || 3000; 
 const mongoURI=process.env.MONGO_URI || "";
